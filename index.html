@@ -577,7 +577,7 @@
         <span class="studio-mark-name">Session Board</span>
       </a>
       <div style="display:flex;align-items:center;gap:16px;">
-        <span class="who">CO-OWNER VIEW</span>
+        <span class="who" id="adminWho">CO-OWNER VIEW</span>
         <button class="logout" onclick="logout()">Log out</button>
       </div>
     </div>
@@ -615,9 +615,15 @@
    Shared storage key: 'pms-bookings'  (visible to every co-owner AND every
    customer's browser — that's what makes the availability grid live)
 
-   ⚠ ADMIN PIN — change this before going live:
+   ⚠ ADMIN LOGINS — PIN check happens client-side, so anyone who views
+   page source can read these. Fine for keeping out casual visitors,
+   not real security. Swap for a real backend before this matters.
    ========================================================= */
-  const ADMIN_PIN = "PUNCH2026";
+  const ADMIN_USERS = [
+    { name: "Admin 1", pin: "973720" },
+    { name: "Admin 2", pin: "085831" },
+    { name: "Admin 3", pin: "251109" }
+  ];
 /* ========================================================= */
 
 /* =========================================================
@@ -898,9 +904,13 @@ async function submitBooking(){
 function openLogin(){ document.getElementById('loginOverlay').classList.add('open'); }
 function closeLogin(){ document.getElementById('loginOverlay').classList.remove('open'); document.getElementById('loginMsg').innerHTML=''; document.getElementById('pinInput').value=''; }
 
+let currentAdmin = null;
+
 function tryLogin(){
   const pin = document.getElementById('pinInput').value.trim();
-  if(pin === ADMIN_PIN){
+  const match = ADMIN_USERS.find(u => u.pin === pin);
+  if(match){
+    currentAdmin = match.name;
     closeLogin();
     enterAdmin();
   }else{
@@ -971,6 +981,7 @@ async function cancelMyBooking(id){
 function enterAdmin(){
   document.getElementById('publicView').classList.add('hidden');
   document.getElementById('adminView').classList.add('open');
+  document.getElementById('adminWho').textContent = currentAdmin ? currentAdmin.toUpperCase() + ' · CO-OWNER VIEW' : 'CO-OWNER VIEW';
   populateHourSelects();
   document.getElementById('admDate').value = todayISO();
   renderBookingList();
@@ -979,6 +990,7 @@ function enterAdmin(){
 function logout(){
   document.getElementById('adminView').classList.remove('open');
   document.getElementById('publicView').classList.remove('hidden');
+  currentAdmin = null;
   stopPolling();
 }
 
