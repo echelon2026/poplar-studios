@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poplar Music Studios — Hourly Studio Booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E1B16;
+    --ink-2:#262219;
+    --paper:#F1E9D2;
+    --paper-2:#E8DEC2;
+    --cream-dim:#A79C86;
+    --stamp-red:#A8342A;
+    --gold:#C89B3C;
+    --line:#3a3527;
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--ink);color:var(--paper);
+    font-family:'Work Sans',sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Anton',sans-serif;text-transform:uppercase;letter-spacing:0.01em;font-weight:400;margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- NAV ---------- */
+  header.site{position:sticky;top:0;z-index:40;background:rgba(30,27,22,0.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+  .navrow{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1080px;margin:0 auto;}
+  .studio-mark{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .studio-mark-icon{width:32px;height:32px;flex:none;}
+  .studio-mark-name{font-family:'Anton';font-size:17px;letter-spacing:0.03em;text-transform:uppercase;}
+  nav.links{display:flex;gap:26px;font-size:14px;letter-spacing:0.02em;}
+  nav.links a{text-decoration:none;color:var(--cream-dim);border-bottom:1px solid transparent;padding-bottom:2px;}
+  nav.links a:hover{color:var(--paper);border-bottom-color:var(--gold);}
+  .admin-link{font-size:12px;color:var(--cream-dim);text-decoration:underline;text-underline-offset:3px;background:none;border:none;}
+  .customer-link{font-family:'IBM Plex Mono';font-size:13px;color:var(--paper);background:none;border:1px solid var(--line);padding:8px 14px;border-radius:4px;letter-spacing:0.02em;}
+  .customer-link:hover{border-color:var(--gold);color:var(--gold);}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;overflow:hidden;padding:88px 0 76px;border-bottom:1px solid var(--line);}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:0.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .hero-inner{position:relative;display:grid;grid-template-columns:0.9fr 1.1fr;gap:48px;align-items:start;}
+  .eyebrow{font-family:'IBM Plex Mono';font-size:13px;letter-spacing:0.1em;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--gold);display:inline-block;}
+  .hero h1{font-size:60px;line-height:0.94;color:var(--paper);}
+  .hero h1 span{color:var(--gold);}
+  .hero p.sub{margin-top:22px;font-size:17px;color:var(--cream-dim);max-width:44ch;font-family:'Work Sans';}
+  .cta-row{margin-top:32px;display:flex;gap:14px;flex-wrap:wrap;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:var(--radius);
+    font-family:'Anton';text-transform:uppercase;letter-spacing:0.03em;font-size:15px;border:1px solid var(--gold);
+    transition:transform .15s ease, background .15s ease;}
+  .btn-primary{background:var(--gold);color:#231a08;border-color:var(--gold);}
+  .btn-primary:hover{transform:translateY(-1px);background:#d8ab54;}
+  .btn-ghost{background:transparent;color:var(--paper);border-color:var(--line);}
+  .btn-ghost:hover{border-color:var(--cream-dim);}
+  .btn:disabled{opacity:0.35;cursor:not-allowed;transform:none;}
+  .btn:disabled:hover{background:var(--gold);transform:none;}
+
+  /* ---------- SIGNATURE: SESSION PASS TICKET ---------- */
+  .pass{
+    background:var(--paper);color:var(--ink);border-radius:8px;position:relative;
+    padding:26px 24px;transform:rotate(-2deg);
+    box-shadow:0 22px 40px rgba(0,0,0,0.35);
+  }
+  .pass::before, .pass::after{
+    content:"";position:absolute;width:26px;height:26px;background:var(--ink);border-radius:50%;
+    top:50%;transform:translateY(-50%);
+  }
+  .pass::before{left:-13px;}
+  .pass::after{right:-13px;}
+  .pass-perf{border-top:2px dashed #b9ad8c;margin:16px 0;position:relative;}
+  .pass-row{display:flex;justify-content:space-between;align-items:flex-start;}
+  .pass-eyebrow{font-family:'IBM Plex Mono';font-size:11px;letter-spacing:0.1em;color:#7a6f52;text-transform:uppercase;}
+  .pass-title{font-family:'Anton';font-size:30px;line-height:0.95;margin-top:6px;}
+  .pass-stamp{
+    font-family:'Anton';font-size:13px;color:var(--stamp-red);border:2px solid var(--stamp-red);
+    padding:5px 10px;border-radius:4px;transform:rotate(8deg);letter-spacing:0.05em;
+  }
+  .pass-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono';font-size:12px;color:#7a6f52;margin-top:6px;}
+  .pass-serial{font-family:'IBM Plex Mono';font-size:12px;color:#7a6f52;letter-spacing:0.08em;}
+
+  /* ---------- HERO CALENDAR CARD (booking front-and-centre) ---------- */
+  .hero-booker{margin-top:2px;}
+  .hero-booker-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .hero-booker-top .tag{font-family:'IBM Plex Mono';font-size:11px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;}
+  .mini-stamp{font-family:'Anton';font-size:11px;color:var(--gold);border:1.5px solid var(--gold);padding:4px 8px;border-radius:4px;letter-spacing:0.03em;}
+  .hero-booker .slot-grid{grid-template-columns:repeat(4,1fr);}
+  .hero-booker .btn{margin-top:20px;width:100%;justify-content:center;}
+  .min-note{font-family:'IBM Plex Mono';font-size:11px;color:var(--cream-dim);margin-top:6px;}
+
+  /* ---------- CALENDAR ---------- */
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .cal-head button{background:none;border:1px solid var(--line);color:var(--paper);width:28px;height:28px;border-radius:4px;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .cal-head button:hover{border-color:var(--gold);color:var(--gold);}
+  .cal-head button:disabled{opacity:0.25;cursor:not-allowed;}
+  .cal-head button:disabled:hover{border-color:var(--line);color:var(--paper);}
+  .cal-month{font-family:'Anton';font-size:15px;letter-spacing:0.02em;color:var(--paper);text-transform:uppercase;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-dow{font-family:'IBM Plex Mono';font-size:10px;color:var(--cream-dim);text-align:center;padding-bottom:6px;letter-spacing:0.03em;}
+  .cal-day{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';font-size:13px;color:var(--paper);border-radius:4px;border:1px solid transparent;cursor:pointer;}
+  .cal-day:hover{border-color:var(--cream-dim);}
+  .cal-day.empty{visibility:hidden;cursor:default;}
+  .cal-day.disabled{color:#4a4636;cursor:not-allowed;}
+  .cal-day.disabled:hover{border-color:transparent;}
+  .cal-day.today{border-color:var(--cream-dim);}
+  .cal-day.selected{background:var(--gold);color:#231a08;font-weight:600;border-color:var(--gold);}
+
+  .selection-summary{
+    font-family:'IBM Plex Mono';font-size:13px;padding:12px 14px;border-radius:var(--radius);
+    margin-bottom:22px;border:1px solid var(--line);
+  }
+  .selection-summary.empty{color:var(--cream-dim);}
+  .selection-summary.empty a{color:var(--gold);text-decoration:underline;text-underline-offset:3px;}
+  .selection-summary.filled{color:var(--gold);border-color:var(--gold);background:rgba(200,155,60,0.08);}
+  .selection-summary.filled strong{color:var(--paper);}
+
+  /* ---------- FEATURE STRIP ---------- */
+  .strip{border-bottom:1px solid var(--line);}
+  .strip-inner{display:grid;grid-template-columns:repeat(3,1fr);}
+  .plate{padding:30px 24px;border-right:1px solid var(--line);}
+  .strip-inner .plate:last-child{border-right:none;}
+  .plate .tag{font-family:'IBM Plex Mono';font-size:11px;color:var(--gold);letter-spacing:0.1em;margin-bottom:8px;}
+  .plate h3{font-size:21px;color:var(--paper);}
+  .plate p{margin:8px 0 0;font-size:14px;color:var(--cream-dim);}
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{padding:80px 0;border-bottom:1px solid var(--line);}
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;gap:24px;flex-wrap:wrap;}
+  .sec-head h2{font-size:36px;color:var(--paper);}
+  .sec-head p{color:var(--cream-dim);font-size:14px;max-width:40ch;}
+
+  /* ---------- RATES (ticket cards) ---------- */
+  .rates-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .rate-card{
+    background:var(--paper);color:var(--ink);border-radius:6px;padding:24px;position:relative;
+  }
+  .rate-card::before,.rate-card::after{content:"";position:absolute;width:20px;height:20px;background:var(--ink);border-radius:50%;top:50%;transform:translateY(-50%);}
+  .rate-card::before{left:-10px;}
+  .rate-card::after{right:-10px;}
+  .rate-card .tag{font-family:'IBM Plex Mono';font-size:11px;color:#7a6f52;letter-spacing:0.06em;}
+  .rate-card .price{font-family:'Anton';font-size:40px;color:var(--stamp-red);margin-top:10px;}
+  .rate-card .price small{font-size:15px;color:#7a6f52;font-family:'Work Sans';}
+  .rate-card p.note{color:#5c5340;font-size:13px;margin-top:8px;}
+
+  .gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px;}
+  @media (max-width:720px){.gear-grid{grid-template-columns:1fr;}}
+  .gear-head{font-family:'IBM Plex Mono';font-size:12px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;}
+  .gear-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);}
+  .gear-list li{padding:11px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--cream-dim);}
+
+  /* ---------- BOOKING ---------- */
+  .booker{background:var(--ink-2);border:1px solid var(--line);border-radius:6px;padding:32px;}
+  .booker-row{display:grid;grid-template-columns:220px 1fr;gap:32px;}
+  .field-label{font-family:'IBM Plex Mono';font-size:12px;color:var(--cream-dim);letter-spacing:0.08em;display:block;margin-bottom:8px;}
+  input[type=date], input[type=text], input[type=tel], input[type=email], textarea{
+    width:100%;background:var(--ink);border:1px solid var(--line);color:var(--paper);
+    padding:12px 14px;border-radius:var(--radius);font-family:'Work Sans';font-size:14px;
+  }
+  input:focus, textarea:focus{border-color:var(--gold);}
+  textarea{resize:vertical;min-height:70px;}
+  .legend{font-size:12px;color:var(--cream-dim);margin-top:14px;font-family:'IBM Plex Mono';}
+  .legend span.chip{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle;}
+
+  .slot-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:6px;}
+  @media (max-width:720px){.slot-grid{grid-template-columns:repeat(3,1fr);}}
+  .slot{
+    background:var(--paper);color:var(--ink);border-radius:4px;border:1px dashed #b9ad8c;
+    padding:10px 4px 16px;text-align:center;font-family:'IBM Plex Mono';font-size:12px;color:#5c5340;
+    display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;cursor:default;
+  }
+  .slot::after{content:"";position:absolute;bottom:5px;width:7px;height:7px;border-radius:50%;background:var(--ink-2);}
+  .slot .stamp{
+    font-family:'Anton';font-size:9px;letter-spacing:0.04em;padding:2px 5px;border-radius:3px;
+    transform:rotate(-6deg);margin-top:2px;
+  }
+  .slot.available .stamp{color:#7a6f52;border:1px solid #b9ad8c;}
+  .slot.available:hover{border-color:var(--ink);cursor:pointer;}
+  .slot.selected{border-color:var(--gold);border-style:solid;}
+  .slot.selected .stamp{background:var(--gold);color:#231a08;border:none;}
+  .slot.booked{opacity:0.75;cursor:not-allowed;}
+  .slot.booked .stamp{background:var(--stamp-red);color:var(--paper);border:none;}
+  .slot.pending{opacity:0.75;cursor:not-allowed;}
+  .slot.pending .stamp{background:#7a6f52;color:var(--paper);border:none;}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px;}
+  @media (max-width:720px){.form-grid{grid-template-columns:1fr;}}
+  .full{grid-column:1/-1;}
+  .agree-row{margin-top:4px;}
+  .agree-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--cream-dim);cursor:pointer;}
+  .agree-label input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--gold);flex:none;}
+  .agree-label a{color:var(--gold);text-decoration:underline;text-underline-offset:2px;}
+
+  .msg{padding:12px 14px;border-radius:var(--radius);font-size:13px;font-family:'IBM Plex Mono';margin-top:16px;}
+  .msg.ok{background:rgba(200,155,60,0.12);border:1px solid var(--gold);color:var(--gold);}
+  .msg.err{background:rgba(168,52,42,0.14);border:1px solid var(--stamp-red);color:#e18a80;}
+
+  /* ---------- ABOUT ---------- */
+  .about-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:48px;}
+  .about-grid p{color:var(--cream-dim);font-size:15px;margin:0 0 14px;}
+  .spec-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);}
+  .spec-list li{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono';font-size:13px;color:var(--cream-dim);}
+  .spec-list li span:last-child{color:var(--paper);}
+  .legal-note{font-family:'IBM Plex Mono';font-size:12px;color:var(--cream-dim);margin-top:22px;}
+
+  /* ---------- FOOTER ---------- */
+  footer{padding:48px 0 32px;}
+  .foot-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:32px;}
+  @media (max-width:720px){.foot-grid{grid-template-columns:1fr;}.about-grid{grid-template-columns:1fr;}}
+  footer h4{font-family:'IBM Plex Mono';font-size:12px;letter-spacing:0.1em;color:var(--cream-dim);margin-bottom:14px;}
+  footer p, footer a{font-size:14px;color:var(--cream-dim);text-decoration:none;}
+  footer .social a{display:inline-block;margin-right:14px;color:var(--paper);}
+  .fineprint{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:#655c48;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .fineprint a{text-decoration:underline;text-underline-offset:2px;}
+
+  @media (max-width:900px){
+    .hero-inner{grid-template-columns:1fr;}
+    nav.links{display:none;}
+    .strip-inner{grid-template-columns:1fr;}
+    .plate{border-right:none;border-bottom:1px solid var(--line);}
+    .rates-grid{grid-template-columns:1fr;}
+    .about-grid{grid-template-columns:1fr;}
+    .booker-row{grid-template-columns:1fr;}
+    .hero h1{font-size:44px;}
+    .pass{transform:none;margin-top:12px;}
+  }
+
+  /* ---------- MODAL / ADMIN ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(10,9,7,0.55);display:none;z-index:100;}
+  .overlay.open{display:block;}
+  .modal{
+    background:var(--paper);color:var(--ink);
+    position:absolute;top:0;right:0;height:100%;
+    width:420px;max-width:92vw;
+    padding:36px 32px;overflow-y:auto;
+    border-radius:10px 0 0 10px;
+    box-shadow:-14px 0 40px rgba(0,0,0,0.4);
+    transform:translateX(100%);
+    transition:transform .28s ease;
+  }
+  .overlay.open .modal{transform:translateX(0);}
+  @media (prefers-reduced-motion:reduce){ .modal{transition:none;} }
+  .modal h3{font-size:22px;margin-bottom:6px;}
+  .modal p.hint{font-size:13px;color:#5c5340;margin:0 0 20px;font-family:'Work Sans';}
+  .modal .close{position:absolute;top:14px;right:16px;background:none;border:none;color:#5c5340;font-size:18px;}
+  .modal input[type=text]{background:#fff;border:1px solid #b9ad8c;color:var(--ink);}
+  .modal .field-label{color:#7a6f52;}
+
+  #adminView{display:none;}
+  #adminView.open{display:block;}
+  #publicView.hidden{display:none;}
+
+  .admin-bar{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);margin-bottom:32px;}
+  .admin-bar .who{font-family:'IBM Plex Mono';font-size:12px;color:var(--cream-dim);}
+  .logout{background:none;border:1px solid var(--line);color:var(--cream-dim);padding:8px 14px;border-radius:var(--radius);font-size:13px;}
+  .logout:hover{border-color:var(--stamp-red);color:#e18a80;}
+
+  .admin-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:32px;align-items:start;}
+  @media (max-width:900px){.admin-grid{grid-template-columns:1fr;}}
+  .admin-panel{background:var(--ink-2);border:1px solid var(--line);border-radius:6px;padding:26px;}
+  .admin-panel h3{font-size:17px;margin-bottom:18px;color:var(--paper);}
+  .admin-panel select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--paper);padding:12px;border-radius:3px;margin-bottom:14px;font-family:'Work Sans';}
+
+  .booking-list{display:flex;flex-direction:column;gap:0;}
+  .date-group{margin-bottom:24px;}
+  .date-group h4{font-family:'IBM Plex Mono';font-size:12px;color:var(--gold);letter-spacing:0.08em;margin-bottom:10px;text-transform:uppercase;}
+  .booking-row{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:12px 14px;background:var(--paper);color:var(--ink);border-radius:4px;margin-bottom:8px;
+    border-left:4px dashed var(--ink-2);
+  }
+  .booking-row .bwhen{font-family:'IBM Plex Mono';font-size:13px;color:var(--ink);min-width:90px;}
+  .booking-row .bwho{font-size:13px;color:#5c5340;flex:1;}
+  .booking-row .bwho b{color:var(--ink);}
+  .badge{font-family:'IBM Plex Mono';font-size:10px;padding:3px 8px;border-radius:20px;letter-spacing:0.05em;text-transform:uppercase;}
+  .badge.confirmed{background:rgba(168,52,42,0.14);color:var(--stamp-red);}
+  .badge.pending{background:rgba(122,111,82,0.2);color:#7a6f52;}
+  .row-actions{display:flex;gap:6px;}
+  .row-actions button{background:none;border:1px solid #b9ad8c;color:#5c5340;font-size:11px;padding:6px 9px;border-radius:3px;font-family:'IBM Plex Mono';}
+  .row-actions button:hover{border-color:#5c5340;color:var(--ink);}
+  .row-actions button.confirm:hover{border-color:var(--gold);color:#9c7a24;}
+  .row-actions button.del:hover{border-color:var(--stamp-red);color:var(--stamp-red);}
+  .empty-note{color:var(--cream-dim);font-size:13px;font-family:'IBM Plex Mono';padding:20px 0;}
+
+  /* ---------- CUSTOMER MODAL RESULTS ---------- */
+  .cust-empty{font-family:'IBM Plex Mono';font-size:13px;color:#5c5340;}
+  .cust-row{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:var(--paper-2);border:1px dashed #b9ad8c;border-radius:4px;
+    padding:10px 12px;margin-bottom:8px;font-size:13px;color:var(--ink);
+  }
+  .cust-row .cwhen{font-family:'IBM Plex Mono';font-size:12px;min-width:150px;}
+  .cust-row button{background:none;border:1px solid #b9ad8c;color:#5c5340;font-size:11px;padding:5px 9px;border-radius:3px;font-family:'IBM Plex Mono';}
+  .cust-row button:hover{border-color:var(--stamp-red);color:var(--stamp-red);}
+</style>
+</head>
+<body>
+
+<!-- ============ PUBLIC SITE ============ -->
+<div id="publicView">
+
+<header class="site">
+  <div class="navrow">
+    <a href="#top" class="studio-mark">
+      <svg class="studio-mark-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="49" fill="#1E1B16"/>
+        <circle cx="50" cy="50" r="43" fill="none" stroke="#C89B3C" stroke-width="2.5"/>
+        <rect x="28" y="35" width="44" height="30" rx="4" fill="#F1E9D2"/>
+        <circle cx="28" cy="50" r="5" fill="#1E1B16"/>
+        <circle cx="72" cy="50" r="5" fill="#1E1B16"/>
+        <line x1="50" y1="38" x2="50" y2="62" stroke="#A79C86" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <circle cx="50" cy="50" r="3" fill="#A8342A"/>
+      </svg>
+      <span class="studio-mark-name">Poplar Music Studios</span>
+    </a>
+    <nav class="links">
+      <a href="#top">Book</a>
+      <a href="#rates">Rates</a>
+      <a href="#about">About</a>
+      <a href="#terms">Terms</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="customer-link" onclick="openCustomerLogin()">My bookings</button>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="grain"></div>
+  <div class="wrap hero-inner">
+    <div>
+      <div class="eyebrow">POPLAR, E14 &nbsp;·&nbsp; HOURLY STUDIO TIME</div>
+      <h1>PUNCH IN.<br><span>NO</span> DAY<br>RATES.</h1>
+      <p class="sub">Hourly studio bookings in Poplar. Smoke-friendly, ventilated, and run by people who record here too.</p>
+    </div>
+    <div class="booker hero-booker">
+      <div class="hero-booker-top">
+        <span class="tag">SESSION PASS · LIVE ROOM A</span>
+        <span class="mini-stamp">2–5HR MIN</span>
+      </div>
+      <div id="calendar" class="cal"></div>
+      <div class="legend">
+        <div><span class="chip" style="background:#7a6f52;"></span>Open</div>
+        <div style="margin-top:6px;"><span class="chip" style="background:var(--gold);"></span>Your selection</div>
+        <div style="margin-top:6px;"><span class="chip" style="background:var(--stamp-red);"></span>Booked</div>
+      </div>
+      <label class="field-label" style="margin-top:18px;">Available hours</label>
+      <div class="slot-grid" id="slotGrid"></div>
+      <div class="min-note">2-hour minimum before 12:00 · 5-hour minimum from 12:00 onward.</div>
+      <button class="btn btn-primary" id="continueBtn" onclick="openBookingDrawer()" disabled>Continue to details →</button>
+    </div>
+  </div>
+</section>
+
+<section class="strip">
+  <div class="wrap strip-inner">
+    <div class="plate">
+      <div class="tag">01 — BOOKING</div>
+      <h3>By the hour</h3>
+      <p>Pick your date, pick your hours. One hour or twelve — no full-day minimums.</p>
+    </div>
+    <div class="plate">
+      <div class="tag">02 — HOUSE RULES</div>
+      <h3>Smoke-friendly</h3>
+      <p>Ventilated live room. Light up on your terms — we built this space for how sessions actually go.</p>
+    </div>
+    <div class="plate">
+      <div class="tag">03 — LOCATION</div>
+      <h3>Poplar, E14</h3>
+      <p>East London, Zone 2. Exact address sent once your booking's confirmed.</p>
+    </div>
+  </div>
+</section>
+
+<section id="rates">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Rates</h2>
+      <p>One flat rate. A space built for producers and songwriters.</p>
+    </div>
+    <div class="rates-grid">
+      <div class="rate-card">
+        <div class="tag">PRODUCER / SONGWRITER SPACE</div>
+        <div class="price">£13 <small>/ hr</small></div>
+        <p class="note">Audio interface, MIDI keyboard, mic, headphones &amp; monitors included.</p>
+      </div>
+      <div class="rate-card">
+        <div class="tag">BLOCK BOOKING · 5+ HOURS</div>
+        <div class="price">10% <small>off</small></div>
+        <p class="note">Applied automatically at confirmation.</p>
+      </div>
+    </div>
+
+    <div class="gear-grid">
+      <div>
+        <h4 class="gear-head">Included in the room</h4>
+        <ul class="gear-list">
+          <li>Audio interface</li>
+          <li>MIDI keyboard</li>
+          <li>Microphone</li>
+          <li>Headphones</li>
+          <li>Monitors</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="gear-head">Bring your own</h4>
+        <ul class="gear-list">
+          <li>Laptop</li>
+          <li>Mouse + keyboard</li>
+          <li>USB-C / USB-A cables</li>
+          <li>1/4" headphone adaptor</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap about-grid">
+    <div>
+      <div class="sec-head" style="margin-bottom:20px;">
+        <h2>The studio</h2>
+      </div>
+      <p>Poplar Music Studios is an independent, owner-run room in East London built for people who actually make records — not a corporate rehearsal chain.</p>
+      <p>No day-rate minimums, no clock-watching, and a live room set up so a session can go from writing to tracking without resetting the whole rig.</p>
+      <p>Co-owners run the desk in rotation, so whoever's confirming your booking has almost certainly used the room themselves that week.</p>
+    </div>
+    <ul class="spec-list">
+      <li><span>Room</span><span>Live room + iso booth</span></li>
+      <li><span>Booking</span><span>Hourly, no minimum</span></li>
+      <li><span>House rules</span><span>Smoke-friendly, ventilated</span></li>
+      <li><span>Hours</span><span>10:00 – 23:00 daily</span></li>
+      <li><span>Location</span><span>Poplar, E14</span></li>
+    </ul>
+  </div>
+</section>
+
+<section id="terms">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Terms</h2>
+      <p>The essentials — full terms sent with your booking confirmation.</p>
+    </div>
+    <ul class="spec-list">
+      <li><span>Confirmation</span><span>Online bookings are provisional until a co-owner confirms them</span></li>
+      <li><span>Payment</span><span>Sessions are paid in advance via our secure payment provider (Stripe)</span></li>
+      <li><span>Cancellations</span><span>Under 24 hours' notice, or no-shows, may be charged in full</span></li>
+      <li><span>Card on file</span><span>Your card is held securely by Stripe; damage to equipment or property may be charged to it</span></li>
+      <li><span>House rules</span><span>Smoke-friendly, ventilated — respect the gear and the room</span></li>
+    </ul>
+    <p class="legal-note">This is placeholder wording, not legal advice — have a solicitor review the full terms before publishing.</p>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>POPLAR MUSIC STUDIOS</h4>
+        <p>Poplar, London E14<br>Exact address sent on confirmation.</p>
+      </div>
+      <div>
+        <h4>CONTACT</h4>
+        <p><a href="mailto:hello@poplarmusicstudios.co.uk">hello@poplarmusicstudios.co.uk</a></p>
+        <p>020 XXXX XXXX</p>
+      </div>
+      <div>
+        <h4>FOLLOW</h4>
+        <div class="social">
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+        </div>
+      </div>
+    </div>
+    <div class="fineprint">
+      <span>© 2026 Poplar Music Studios · <a href="#terms">Terms &amp; Conditions</a></span>
+      <button class="admin-link" onclick="openLogin()">Studio login</button>
+    </div>
+  </div>
+</footer>
+
+</div>
+<!-- ============ END PUBLIC SITE ============ -->
+
+
+<!-- ============ LOGIN MODAL ============ -->
+<div class="overlay" id="loginOverlay" onclick="closeLogin()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="close" onclick="closeLogin()">✕</button>
+    <h3>Studio login</h3>
+    <p class="hint">Co-owner access — enter the studio PIN to manage bookings.</p>
+    <label class="field-label">PIN</label>
+    <input type="text" id="pinInput" placeholder="••••••" autocomplete="off">
+    <div id="loginMsg"></div>
+    <div class="cta-row" style="margin-top:18px;">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="tryLogin()">Enter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CUSTOMER "MY BOOKINGS" MODAL ============ -->
+<div class="overlay" id="customerOverlay" onclick="closeCustomerLogin()">
+  <div class="modal" style="width:460px;" onclick="event.stopPropagation()">
+    <button class="close" onclick="closeCustomerLogin()">✕</button>
+    <h3>My bookings</h3>
+    <p class="hint">Enter the email you booked with to see and manage your sessions.</p>
+    <label class="field-label">Email</label>
+    <input type="text" id="customerEmailInput" placeholder="you@email.com" autocomplete="off">
+    <div class="cta-row" style="margin-top:14px;">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="findMyBookings()">Find my bookings</button>
+    </div>
+    <div id="customerResults" style="margin-top:20px;"></div>
+  </div>
+</div>
+
+<!-- ============ BOOKING DETAILS DRAWER ============ -->
+<div class="overlay" id="bookingOverlay" onclick="closeBookingDrawer()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="close" onclick="closeBookingDrawer()">✕</button>
+    <h3>Your details</h3>
+    <p class="hint">Lock in your slot with your details below.</p>
+    <div id="selectionSummary" class="selection-summary empty">No hours selected yet — <a href="#top">pick your hours above</a>.</div>
+
+    <div class="form-grid">
+      <div class="full">
+        <label class="field-label">Name</label>
+        <input type="text" id="custName" placeholder="Full name">
+      </div>
+      <div class="full">
+        <label class="field-label">Email</label>
+        <input type="text" id="custEmail" placeholder="you@email.com">
+      </div>
+      <div class="full">
+        <label class="field-label">Phone (optional)</label>
+        <input type="text" id="custPhone" placeholder="07...">
+      </div>
+      <div class="full">
+        <label class="field-label">Notes (optional)</label>
+        <textarea id="custNotes" placeholder="Anything we should know — number in the room, gear needs, etc."></textarea>
+      </div>
+      <div class="full agree-row">
+        <label class="agree-label">
+          <input type="checkbox" id="custAgree">
+          <span>I agree to the <a href="#terms">Terms &amp; Conditions</a>, including that a card may be held on file and charged for any damage.</span>
+        </label>
+      </div>
+    </div>
+    <div class="cta-row" style="margin-top:18px;">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitBooking()">Request booking</button>
+    </div>
+    <div id="bookMsg"></div>
+  </div>
+</div>
+
+<!-- ============ ADMIN VIEW ============ -->
+<div id="adminView">
+  <div class="wrap">
+    <div class="admin-bar">
+      <a href="#" class="studio-mark" onclick="return false;">
+        <svg class="studio-mark-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="49" fill="#1E1B16"/>
+          <circle cx="50" cy="50" r="43" fill="none" stroke="#C89B3C" stroke-width="2.5"/>
+          <rect x="28" y="35" width="44" height="30" rx="4" fill="#F1E9D2"/>
+          <circle cx="28" cy="50" r="5" fill="#1E1B16"/>
+          <circle cx="72" cy="50" r="5" fill="#1E1B16"/>
+          <line x1="50" y1="38" x2="50" y2="62" stroke="#A79C86" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <circle cx="50" cy="50" r="3" fill="#A8342A"/>
+        </svg>
+        <span class="studio-mark-name">Session Board</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span class="who">CO-OWNER VIEW</span>
+        <button class="logout" onclick="logout()">Log out</button>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="admin-panel">
+        <h3>Punch in a booking</h3>
+        <label class="field-label">Date</label>
+        <input type="date" id="admDate" style="margin-bottom:14px;">
+        <label class="field-label">Start hour</label>
+        <select id="admStart"></select>
+        <label class="field-label">End hour</label>
+        <select id="admEnd"></select>
+        <label class="field-label">Name</label>
+        <input type="text" id="admName" style="margin-bottom:14px;" placeholder="Who booked it">
+        <label class="field-label">Contact</label>
+        <input type="text" id="admContact" style="margin-bottom:14px;" placeholder="Phone / email / IG handle">
+        <label class="field-label">Notes</label>
+        <textarea id="admNotes" style="margin-bottom:16px;" placeholder="Optional"></textarea>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="adminAddBooking()">Add to board</button>
+        <div id="admMsg"></div>
+      </div>
+
+      <div>
+        <h3 style="font-size:16px;margin-bottom:16px;color:var(--paper);">Upcoming bookings</h3>
+        <div class="booking-list" id="bookingList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   Poplar Music Studios — booking logic
+   Shared storage key: 'pms-bookings'  (visible to every co-owner AND every
+   customer's browser — that's what makes the availability grid live)
+
+   ⚠ ADMIN PIN — change this before going live:
+   ========================================================= */
+  const ADMIN_PIN = "PUNCH2026";
+/* ========================================================= */
+
+/* =========================================================
+   ⚠ PAYMENT — paste your real Stripe Payment Link below.
+
+   Set this up in the Stripe Dashboard (no code needed):
+   1. Payment links -> Create payment link
+   2. Product: "Studio session", price £13.00, billed per unit,
+      quantity adjustable (so customers can set it to match their hours)
+   3. Advanced options -> turn on "Save payment details for future use"
+      (this is what lets you charge the same card later for damages)
+   4. Advanced options -> require Terms of Service acceptance, pointing
+      at this site's #terms section
+   5. Copy the generated link below.
+
+   This site never collects or stores card details directly — that
+   handoff to Stripe is intentional, see the message in chat for why.
+   ========================================================= */
+  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/REPLACE_ME";
+/* ========================================================= */
+
+const OPEN_HOUR = 10;   // studio opens 10:00
+const CLOSE_HOUR = 23;  // last bookable hour starts at 22:00 (22-23)
+const LATE_START_HOUR = 12; // bookings starting at/after this hour need the longer minimum
+const MIN_HOURS_EARLY = 2;  // minimum booking length for starts before LATE_START_HOUR
+const MIN_HOURS_LATE = 5;   // minimum booking length for starts at/after LATE_START_HOUR
+const RATE_PER_HOUR = 13;   // £ per hour, producer/songwriter space
+const STORAGE_KEY = "pms-bookings";
+
+let bookings = [];
+let selectedHours = new Set();
+let wasValidSelection = false;
+
+function uid(){ return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayISO(){ const d = new Date(); return d.toISOString().slice(0,10); }
+function fmtHour(h){ return (h<10?'0':'') + h + ':00'; }
+
+/* ---------- storage ---------- */
+async function loadBookings(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    bookings = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    bookings = [];
+  }
+}
+async function saveBookings(){
+  await window.storage.set(STORAGE_KEY, JSON.stringify(bookings), true);
+}
+
+/* ---------- public booking grid ---------- */
+function bookingsForDate(dateStr){
+  return bookings.filter(b => b.date === dateStr);
+}
+function hourStatus(dateStr, hour){
+  const dayBookings = bookingsForDate(dateStr);
+  for(const b of dayBookings){
+    if(hour >= b.startHour && hour < b.endHour){
+      return b.status === 'confirmed' ? 'booked' : 'pending';
+    }
+  }
+  return 'open';
+}
+
+/* ---------- calendar ---------- */
+let viewYear, viewMonth; // viewMonth is 0-indexed
+let selectedDate = todayISO();
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function pad2(n){ return n < 10 ? '0' + n : '' + n; }
+
+function initCalendarState(){
+  const now = new Date();
+  viewYear = now.getFullYear();
+  viewMonth = now.getMonth();
+}
+
+function changeMonth(delta){
+  viewMonth += delta;
+  if(viewMonth < 0){ viewMonth = 11; viewYear--; }
+  if(viewMonth > 11){ viewMonth = 0; viewYear++; }
+  renderCalendar();
+}
+
+function selectDate(iso){
+  selectedDate = iso;
+  selectedHours.clear();
+  wasValidSelection = false;
+  renderCalendar();
+  renderSlotGrid();
+  updateSelectionSummary();
+  updateContinueButtonState();
+}
+
+function renderCalendar(){
+  const el = document.getElementById('calendar');
+  if(!el) return;
+  const todayStr = todayISO();
+  const now = new Date();
+  const isCurrentMonth = (viewYear === now.getFullYear() && viewMonth === now.getMonth());
+  const firstOfMonth = new Date(viewYear, viewMonth, 1);
+  const startWeekday = (firstOfMonth.getDay() + 6) % 7; // Monday = 0
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  let cells = '';
+  for(let i = 0; i < startWeekday; i++){ cells += '<div class="cal-day empty"></div>'; }
+  for(let d = 1; d <= daysInMonth; d++){
+    const iso = viewYear + '-' + pad2(viewMonth + 1) + '-' + pad2(d);
+    const isPast = iso < todayStr;
+    const isToday = iso === todayStr;
+    const isSelected = iso === selectedDate;
+    let cls = 'cal-day';
+    if(isPast) cls += ' disabled';
+    if(isToday) cls += ' today';
+    if(isSelected) cls += ' selected';
+    cells += '<div class="' + cls + '"' + (isPast ? '' : ' onclick="selectDate(\'' + iso + '\')"') + '>' + d + '</div>';
+  }
+
+  el.innerHTML =
+    '<div class="cal-head">' +
+      '<button onclick="changeMonth(-1)"' + (isCurrentMonth ? ' disabled' : '') + '>‹</button>' +
+      '<span class="cal-month">' + MONTH_NAMES[viewMonth] + ' ' + viewYear + '</span>' +
+      '<button onclick="changeMonth(1)">›</button>' +
+    '</div>' +
+    '<div class="cal-grid">' +
+      '<div class="cal-dow">MO</div><div class="cal-dow">TU</div><div class="cal-dow">WE</div><div class="cal-dow">TH</div><div class="cal-dow">FR</div><div class="cal-dow">SA</div><div class="cal-dow">SU</div>' +
+      cells +
+    '</div>';
+}
+
+function renderSlotGrid(){
+  const dateStr = selectedDate;
+  const grid = document.getElementById('slotGrid');
+  grid.innerHTML = '';
+  for(let h = OPEN_HOUR; h < CLOSE_HOUR; h++){
+    const status = hourStatus(dateStr, h);
+    const div = document.createElement('div');
+    div.className = 'slot ' + (status === 'open' ? 'available' : status);
+    if(selectedHours.has(h)) div.classList.add('selected');
+    const stampText = selectedHours.has(h) ? 'HELD' : (status === 'open' ? 'OPEN' : (status === 'booked' ? 'BOOKED' : 'PENDING'));
+    div.innerHTML = fmtHour(h) + '<span class="stamp">' + stampText + '</span>';
+    if(status === 'open'){
+      div.onclick = () => toggleHour(h);
+    }
+    grid.appendChild(div);
+  }
+}
+function toggleHour(h){
+  if(selectedHours.has(h)) selectedHours.delete(h);
+  else selectedHours.add(h);
+  renderSlotGrid();
+  updateSelectionSummary();
+  updateContinueButtonState();
+  const nowValid = isSelectionValid();
+  if(nowValid && !wasValidSelection){
+    openBookingDrawer();
+  }
+  wasValidSelection = nowValid;
+}
+
+function isSelectionValid(){
+  if(selectedHours.size === 0) return false;
+  const hoursArr = Array.from(selectedHours).sort((a,b)=>a-b);
+  for(let i=1;i<hoursArr.length;i++){
+    if(hoursArr[i] !== hoursArr[i-1]+1) return false;
+  }
+  const minRequired = hoursArr[0] >= LATE_START_HOUR ? MIN_HOURS_LATE : MIN_HOURS_EARLY;
+  return hoursArr.length >= minRequired;
+}
+
+function updateContinueButtonState(){
+  const btn = document.getElementById('continueBtn');
+  if(!btn) return;
+  btn.disabled = !isSelectionValid();
+}
+
+function updateSelectionSummary(){
+  const el = document.getElementById('selectionSummary');
+  if(!el) return;
+  if(selectedHours.size === 0){
+    el.className = 'selection-summary empty';
+    el.innerHTML = 'No hours selected yet — <a href="#top">pick your hours above</a>.';
+    return;
+  }
+  const hoursArr = Array.from(selectedHours).sort((a,b)=>a-b);
+  const total = hoursArr.length * RATE_PER_HOUR;
+  el.className = 'selection-summary filled';
+  el.innerHTML = 'Selected: <strong>' + formatDateHeading(selectedDate) + '</strong>, ' +
+    fmtHour(hoursArr[0]) + '–' + fmtHour(hoursArr[hoursArr.length-1] + 1) +
+    ' · <strong>£' + total + '</strong> (' + hoursArr.length + ' hrs @ £' + RATE_PER_HOUR + '/hr)';
+}
+
+async function submitBooking(){
+  const dateStr = selectedDate;
+  const msgBox = document.getElementById('bookMsg');
+  const name = document.getElementById('custName').value.trim();
+  const email = document.getElementById('custEmail').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const notes = document.getElementById('custNotes').value.trim();
+  const agreed = document.getElementById('custAgree').checked;
+
+  if(selectedHours.size === 0){
+    msgBox.innerHTML = '<div class="msg err">Select your hours first.</div>';
+    return;
+  }
+  const hoursArr = Array.from(selectedHours).sort((a,b)=>a-b);
+  for(let i=1;i<hoursArr.length;i++){
+    if(hoursArr[i] !== hoursArr[i-1]+1){
+      msgBox.innerHTML = '<div class="msg err">Please select consecutive hours only.</div>';
+      return;
+    }
+  }
+  const startHour = hoursArr[0];
+  const minRequired = startHour >= LATE_START_HOUR ? MIN_HOURS_LATE : MIN_HOURS_EARLY;
+  if(hoursArr.length < minRequired){
+    msgBox.innerHTML = startHour >= LATE_START_HOUR
+      ? '<div class="msg err">Bookings starting at or after 12:00 need a minimum of 5 hours — select more hours.</div>'
+      : '<div class="msg err">2-hour minimum booking — select at least 2 hours.</div>';
+    return;
+  }
+  if(!name || !email){
+    msgBox.innerHTML = '<div class="msg err">Name and email are required.</div>';
+    return;
+  }
+  if(!/^\S+@\S+\.\S+$/.test(email)){
+    msgBox.innerHTML = '<div class="msg err">Enter a valid email address.</div>';
+    return;
+  }
+  if(!agreed){
+    msgBox.innerHTML = '<div class="msg err">Please agree to the Terms &amp; Conditions to continue.</div>';
+    return;
+  }
+
+  await loadBookings();
+  // re-check nobody grabbed it while the form was open
+  for(const h of hoursArr){
+    if(hourStatus(dateStr, h) !== 'open'){
+      msgBox.innerHTML = '<div class="msg err">One of those hours was just taken — pick again.</div>';
+      selectedHours.clear();
+      renderSlotGrid();
+      return;
+    }
+  }
+
+  const contact = phone ? (email + ' · ' + phone) : email;
+  const hoursCount = hoursArr.length;
+  const total = hoursCount * RATE_PER_HOUR;
+  bookings.push({
+    id: uid(),
+    date: dateStr,
+    startHour: hoursArr[0],
+    endHour: hoursArr[hoursArr.length-1] + 1,
+    name, email: email.toLowerCase(), phone, contact, notes,
+    price: total,
+    source: 'online',
+    status: 'pending',
+    createdAt: Date.now()
+  });
+  await saveBookings();
+  selectedHours.clear();
+  wasValidSelection = false;
+  document.getElementById('custName').value = '';
+  document.getElementById('custEmail').value = '';
+  document.getElementById('custPhone').value = '';
+  document.getElementById('custNotes').value = '';
+  document.getElementById('custAgree').checked = false;
+  renderSlotGrid();
+  updateSelectionSummary();
+  updateContinueButtonState();
+  msgBox.innerHTML =
+    '<div class="msg ok">Booking requested for ' + dateStr + ', ' + fmtHour(hoursArr[0]) + '–' + fmtHour(hoursArr[hoursArr.length-1]+1) +
+    ' · £' + total + ' total. We\'ll confirm shortly.</div>' +
+    '<a href="' + STRIPE_PAYMENT_LINK + '" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px;">Secure booking — pay &amp; save card →</a>' +
+    '<div class="min-note" style="margin-top:10px;">Opens Stripe\'s secure payment page in a new tab. Set the quantity to <strong>' + hoursCount + '</strong> to match £' + total + '.</div>';
+}
+
+/* ---------- admin ---------- */
+function openLogin(){ document.getElementById('loginOverlay').classList.add('open'); }
+function closeLogin(){ document.getElementById('loginOverlay').classList.remove('open'); document.getElementById('loginMsg').innerHTML=''; document.getElementById('pinInput').value=''; }
+
+function tryLogin(){
+  const pin = document.getElementById('pinInput').value.trim();
+  if(pin === ADMIN_PIN){
+    closeLogin();
+    enterAdmin();
+  }else{
+    document.getElementById('loginMsg').innerHTML = '<div class="msg err">Wrong PIN.</div>';
+  }
+}
+
+/* ---------- booking details drawer ---------- */
+function openBookingDrawer(){
+  updateSelectionSummary();
+  document.getElementById('bookingOverlay').classList.add('open');
+}
+function closeBookingDrawer(){
+  document.getElementById('bookingOverlay').classList.remove('open');
+}
+
+/* ---------- customer "my bookings" ---------- */
+let lastCustomerEmail = '';
+
+function openCustomerLogin(){
+  document.getElementById('customerOverlay').classList.add('open');
+}
+function closeCustomerLogin(){
+  document.getElementById('customerOverlay').classList.remove('open');
+  document.getElementById('customerResults').innerHTML = '';
+  document.getElementById('customerEmailInput').value = '';
+  lastCustomerEmail = '';
+}
+
+async function findMyBookings(){
+  const email = document.getElementById('customerEmailInput').value.trim().toLowerCase();
+  const results = document.getElementById('customerResults');
+  if(!email){
+    results.innerHTML = '<div class="cust-empty">Enter the email you booked with.</div>';
+    return;
+  }
+  lastCustomerEmail = email;
+  await loadBookings();
+  renderCustomerResults();
+}
+
+function renderCustomerResults(){
+  const results = document.getElementById('customerResults');
+  const mine = bookings
+    .filter(b => b.email === lastCustomerEmail)
+    .sort((a,b) => a.date === b.date ? a.startHour - b.startHour : a.date.localeCompare(b.date));
+
+  if(mine.length === 0){
+    results.innerHTML = '<div class="cust-empty">No bookings found for that email. Check the address you booked with, or get in touch below.</div>';
+    return;
+  }
+  results.innerHTML = mine.map(b => `
+    <div class="cust-row">
+      <div class="cwhen">${formatDateHeading(b.date)}<br>${fmtHour(b.startHour)}–${fmtHour(b.endHour)}</div>
+      <span class="badge ${b.status}">${b.status}</span>
+      <button onclick="cancelMyBooking('${b.id}')">Cancel</button>
+    </div>
+  `).join('');
+}
+
+async function cancelMyBooking(id){
+  await loadBookings();
+  bookings = bookings.filter(x => x.id !== id);
+  await saveBookings();
+  renderCustomerResults();
+}
+
+function enterAdmin(){
+  document.getElementById('publicView').classList.add('hidden');
+  document.getElementById('adminView').classList.add('open');
+  populateHourSelects();
+  document.getElementById('admDate').value = todayISO();
+  renderBookingList();
+  startPolling();
+}
+function logout(){
+  document.getElementById('adminView').classList.remove('open');
+  document.getElementById('publicView').classList.remove('hidden');
+  stopPolling();
+}
+
+function populateHourSelects(){
+  const startSel = document.getElementById('admStart');
+  const endSel = document.getElementById('admEnd');
+  startSel.innerHTML = ''; endSel.innerHTML = '';
+  for(let h=OPEN_HOUR; h<CLOSE_HOUR; h++){
+    startSel.innerHTML += `<option value="${h}">${fmtHour(h)}</option>`;
+  }
+  for(let h=OPEN_HOUR+1; h<=CLOSE_HOUR; h++){
+    endSel.innerHTML += `<option value="${h}">${fmtHour(h)}</option>`;
+  }
+  endSel.value = OPEN_HOUR+1;
+}
+
+async function adminAddBooking(){
+  const date = document.getElementById('admDate').value || todayISO();
+  const startHour = parseInt(document.getElementById('admStart').value, 10);
+  const endHour = parseInt(document.getElementById('admEnd').value, 10);
+  const name = document.getElementById('admName').value.trim();
+  const contact = document.getElementById('admContact').value.trim();
+  const notes = document.getElementById('admNotes').value.trim();
+  const msgBox = document.getElementById('admMsg');
+
+  if(endHour <= startHour){
+    msgBox.innerHTML = '<div class="msg err">End hour must be after start hour.</div>';
+    return;
+  }
+  if(!name){
+    msgBox.innerHTML = '<div class="msg err">Add a name for the booking.</div>';
+    return;
+  }
+  await loadBookings();
+  const clash = bookings.some(b => b.date === date && startHour < b.endHour && endHour > b.startHour);
+  if(clash){
+    msgBox.innerHTML = '<div class="msg err">That clashes with an existing booking on this date.</div>';
+    return;
+  }
+  bookings.push({
+    id: uid(), date, startHour, endHour, name, contact, notes,
+    source: 'admin', status: 'confirmed', createdAt: Date.now()
+  });
+  await saveBookings();
+  document.getElementById('admName').value = '';
+  document.getElementById('admContact').value = '';
+  document.getElementById('admNotes').value = '';
+  msgBox.innerHTML = '<div class="msg ok">Added to the board.</div>';
+  renderBookingList();
+}
+
+async function confirmBooking(id){
+  await loadBookings();
+  const b = bookings.find(x => x.id === id);
+  if(b) b.status = 'confirmed';
+  await saveBookings();
+  renderBookingList();
+}
+async function deleteBooking(id){
+  await loadBookings();
+  bookings = bookings.filter(x => x.id !== id);
+  await saveBookings();
+  renderBookingList();
+}
+
+async function renderBookingList(){
+  await loadBookings();
+  const list = document.getElementById('bookingList');
+  const upcoming = bookings
+    .filter(b => b.date >= todayISO())
+    .sort((a,b) => a.date === b.date ? a.startHour - b.startHour : a.date.localeCompare(b.date));
+
+  if(upcoming.length === 0){
+    list.innerHTML = '<div class="empty-note">Nothing on the board yet.</div>';
+    return;
+  }
+  const byDate = {};
+  upcoming.forEach(b => { (byDate[b.date] = byDate[b.date] || []).push(b); });
+
+  list.innerHTML = Object.keys(byDate).sort().map(date => {
+    const rows = byDate[date].map(b => `
+      <div class="booking-row">
+        <div class="bwhen">${fmtHour(b.startHour)}–${fmtHour(b.endHour)}</div>
+        <div class="bwho"><b>${escapeHtml(b.name)}</b> · ${escapeHtml(b.contact)}${b.price ? ' · £' + b.price : ''}${b.notes ? ' · ' + escapeHtml(b.notes) : ''}</div>
+        <span class="badge ${b.status}">${b.status}</span>
+        <div class="row-actions">
+          ${b.status === 'pending' ? `<button class="confirm" onclick="confirmBooking('${b.id}')">Confirm</button>` : ''}
+          <button class="del" onclick="deleteBooking('${b.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+    return `<div class="date-group"><h4>${formatDateHeading(date)}</h4>${rows}</div>`;
+  }).join('');
+}
+
+function formatDateHeading(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+}
+function escapeHtml(str){
+  return (str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+let pollTimer = null;
+function startPolling(){ pollTimer = setInterval(renderBookingList, 15000); }
+function stopPolling(){ if(pollTimer) clearInterval(pollTimer); }
+
+/* ---------- init ---------- */
+window.addEventListener('DOMContentLoaded', async () => {
+  initCalendarState();
+  renderCalendar();
+  await loadBookings();
+  renderSlotGrid();
+  updateSelectionSummary();
+});
+</script>
+
+</body>
+</html>
