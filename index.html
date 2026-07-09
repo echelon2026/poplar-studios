@@ -352,9 +352,9 @@
         <div style="margin-top:6px;"><span class="chip" style="background:var(--gold);"></span>Your selection</div>
         <div style="margin-top:6px;"><span class="chip" style="background:var(--stamp-red);"></span>Booked</div>
       </div>
-      <label class="field-label" style="margin-top:18px;">Available hours</label>
+      <label class="field-label" style="margin-top:18px;">Available hours <span style="color:var(--gold);text-transform:none;letter-spacing:0;">— open 10:00–23:00 daily</span></label>
       <div class="slot-grid" id="slotGrid"></div>
-      <div class="min-note">2-hour minimum before 12:00 · 5-hour minimum from 12:00 onward.</div>
+      <div class="min-note" style="color:var(--gold);font-weight:600;">Minimum booking: 2 hours before 12:00, 5 hours from 12:00 onward. Selecting a start time auto-fills the minimum — add more hours if you need them.</div>
       <button class="btn btn-primary" id="continueBtn" onclick="openBookingDrawer()" disabled>Continue to details →</button>
     </div>
   </div>
@@ -365,7 +365,7 @@
     <div class="plate">
       <div class="tag">01 — BOOKING</div>
       <h3>By the hour</h3>
-      <p>Pick your date, pick your hours. One hour or twelve — no full-day minimums.</p>
+      <p>Pick your date, pick your hours — 2hr minimum before noon, 5hr minimum after. No full-day rates, no wasted time.</p>
     </div>
     <div class="plate">
       <div class="tag">02 — HOUSE RULES</div>
@@ -399,7 +399,7 @@
       </div>
     </div>
 
-    <div class="gear-grid">
+    <div class="gear-grid" style="grid-template-columns:1fr;">
       <div>
         <h4 class="gear-head">Included in the room</h4>
         <ul class="gear-list">
@@ -408,15 +408,6 @@
           <li>Microphone</li>
           <li>Headphones</li>
           <li>Monitors</li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="gear-head">Bring your own</h4>
-        <ul class="gear-list">
-          <li>Laptop</li>
-          <li>Mouse + keyboard</li>
-          <li>USB-C / USB-A cables</li>
-          <li>1/4" headphone adaptor</li>
         </ul>
       </div>
     </div>
@@ -435,7 +426,7 @@
     </div>
     <ul class="spec-list">
       <li><span>Room</span><span>Live room + iso booth</span></li>
-      <li><span>Booking</span><span>Hourly, no minimum</span></li>
+      <li><span>Booking</span><span>Hourly — 2hr min before 12:00, 5hr min after</span></li>
       <li><span>House rules</span><span>Smoke-friendly, ventilated</span></li>
       <li><span>Hours</span><span>10:00 – 23:00 daily</span></li>
       <li><span>Location</span><span>Poplar, E14</span></li>
@@ -528,6 +519,13 @@
     <h3>Your details</h3>
     <p class="hint">Lock in your slot with your details below.</p>
     <div id="selectionSummary" class="selection-summary empty">No hours selected yet — <a href="#top">pick your hours above</a>.</div>
+
+    <div class="full agree-row" style="margin-top:14px;">
+      <label class="agree-label">
+        <input type="checkbox" id="custEngineer" onchange="updateSelectionSummary()">
+        <span>Add a resident engineer — <strong>+£12/hr</strong>, someone who knows the room runs your session with you.</span>
+      </label>
+    </div>
 
     <div class="form-grid">
       <div class="full">
@@ -643,6 +641,8 @@
    handoff to Stripe is intentional, see the message in chat for why.
    ========================================================= */
   const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_aFa4gsasRcjtfWI8BT5gc00";
+  // £25/hr price (£13 room + £12 resident engineer), used when the engineer add-on is checked
+  const STRIPE_PAYMENT_LINK_ENGINEER = "https://buy.stripe.com/test_3cI8wIgRf2IT11O5pH5gc01";
 /* ========================================================= */
 
 const OPEN_HOUR = 10;   // studio opens 10:00
@@ -651,6 +651,7 @@ const LATE_START_HOUR = 12; // bookings starting at/after this hour need the lon
 const MIN_HOURS_EARLY = 2;  // minimum booking length for starts before LATE_START_HOUR
 const MIN_HOURS_LATE = 5;   // minimum booking length for starts at/after LATE_START_HOUR
 const RATE_PER_HOUR = 13;   // £ per hour, producer/songwriter space
+const ENGINEER_RATE_PER_HOUR = 12; // £ per hour add-on for a resident engineer
 const STORAGE_KEY = "pms-bookings";
 
 let bookings = [];
@@ -772,8 +773,19 @@ function renderSlotGrid(){
   }
 }
 function toggleHour(h){
-  if(selectedHours.has(h)) selectedHours.delete(h);
-  else selectedHours.add(h);
+  if(selectedHours.has(h)){
+    selectedHours.delete(h);
+  }else if(selectedHours.size === 0){
+    // starting a fresh selection — auto-fill the minimum booking length
+    const minRequired = h >= LATE_START_HOUR ? MIN_HOURS_LATE : MIN_HOURS_EARLY;
+    for(let i = 0; i < minRequired; i++){
+      const hh = h + i;
+      if(hh >= CLOSE_HOUR || hourStatus(selectedDate, hh) !== 'open') break;
+      selectedHours.add(hh);
+    }
+  }else{
+    selectedHours.add(h);
+  }
   renderSlotGrid();
   updateSelectionSummary();
   updateContinueButtonState();
@@ -809,11 +821,14 @@ function updateSelectionSummary(){
     return;
   }
   const hoursArr = Array.from(selectedHours).sort((a,b)=>a-b);
-  const total = hoursArr.length * RATE_PER_HOUR;
+  const withEngineer = document.getElementById('custEngineer')?.checked;
+  const rate = RATE_PER_HOUR + (withEngineer ? ENGINEER_RATE_PER_HOUR : 0);
+  const total = hoursArr.length * rate;
   el.className = 'selection-summary filled';
   el.innerHTML = 'Selected: <strong>' + formatDateHeading(selectedDate) + '</strong>, ' +
     fmtHour(hoursArr[0]) + '–' + fmtHour(hoursArr[hoursArr.length-1] + 1) +
-    ' · <strong>£' + total + '</strong> (' + hoursArr.length + ' hrs @ £' + RATE_PER_HOUR + '/hr)';
+    ' · <strong>£' + total + '</strong> (' + hoursArr.length + ' hrs @ £' + rate + '/hr' +
+    (withEngineer ? ', incl. resident engineer' : '') + ')';
 }
 
 async function submitBooking(){
@@ -870,7 +885,9 @@ async function submitBooking(){
 
   const contact = phone ? (email + ' · ' + phone) : email;
   const hoursCount = hoursArr.length;
-  const total = hoursCount * RATE_PER_HOUR;
+  const withEngineer = document.getElementById('custEngineer').checked;
+  const rate = RATE_PER_HOUR + (withEngineer ? ENGINEER_RATE_PER_HOUR : 0);
+  const total = hoursCount * rate;
   bookings.push({
     id: uid(),
     date: dateStr,
@@ -878,6 +895,7 @@ async function submitBooking(){
     endHour: hoursArr[hoursArr.length-1] + 1,
     name, email: email.toLowerCase(), phone, contact, notes,
     price: total,
+    withEngineer,
     source: 'online',
     status: 'pending',
     createdAt: Date.now()
@@ -890,14 +908,17 @@ async function submitBooking(){
   document.getElementById('custPhone').value = '';
   document.getElementById('custNotes').value = '';
   document.getElementById('custAgree').checked = false;
+  document.getElementById('custEngineer').checked = false;
   renderSlotGrid();
   updateSelectionSummary();
   updateContinueButtonState();
+  const payLink = withEngineer ? STRIPE_PAYMENT_LINK_ENGINEER : STRIPE_PAYMENT_LINK;
   msgBox.innerHTML =
     '<div class="msg ok">Booking requested for ' + dateStr + ', ' + fmtHour(hoursArr[0]) + '–' + fmtHour(hoursArr[hoursArr.length-1]+1) +
-    ' · £' + total + ' total. We\'ll confirm shortly.</div>' +
-    '<a href="' + STRIPE_PAYMENT_LINK + '" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px;">Secure booking — pay &amp; save card →</a>' +
-    '<div class="min-note" style="margin-top:10px;">Opens Stripe\'s secure payment page in a new tab. Set the quantity to <strong>' + hoursCount + '</strong> to match £' + total + '.</div>';
+    ' · £' + total + ' total' + (withEngineer ? ' (incl. resident engineer)' : '') + '. We\'ll confirm shortly.</div>' +
+    '<a href="' + payLink + '" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px;">Secure booking — pay &amp; save card →</a>' +
+    '<div class="min-note" style="margin-top:10px;">Opens Stripe\'s secure payment page in a new tab. Set the quantity to <strong>' + hoursCount + '</strong> to match £' + total + '.</div>' +
+    '<div class="min-note" style="margin-top:14px;"><strong>Bring your own:</strong> laptop, mouse + keyboard, USB-C / USB-A cables, 1/4" headphone adaptor. Everything else — audio interface, MIDI keyboard, mic, headphones &amp; monitors — is in the room.</div>';
 }
 
 /* ---------- admin ---------- */
