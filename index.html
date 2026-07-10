@@ -671,7 +671,11 @@ async function loadBookings(){
   try{
     const res = await fetch(FIREBASE_DB_URL + '/' + STORAGE_KEY + '.json');
     const data = await res.json();
-    bookings = data || [];
+    // Stored as an object keyed by booking id (not an array) — this is what lets the
+    // Firebase rules permit writing/deleting one booking without allowing a single
+    // request to overwrite or wipe the whole collection.
+    bookings = data ? Object.values(data) : [];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
   }catch(e){
     // Network hiccup fallback — this device's last-known copy, not the shared board.
     try{
@@ -682,16 +686,26 @@ async function loadBookings(){
     }
   }
 }
-async function saveBookings(){
+// Create or update a single booking. Never touches any other booking's data.
+async function putBookingRemote(booking){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
   try{
-    await fetch(FIREBASE_DB_URL + '/' + STORAGE_KEY + '.json', {
+    await fetch(FIREBASE_DB_URL + '/' + STORAGE_KEY + '/' + booking.id + '.json', {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(bookings)
+      body: JSON.stringify(booking)
     });
   }catch(e){
     // Saved locally above even if the network call failed — not silently lost.
+  }
+}
+// Remove a single booking by id. Never touches any other booking's data.
+async function deleteBookingRemote(id){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+  try{
+    await fetch(FIREBASE_DB_URL + '/' + STORAGE_KEY + '/' + id + '.json', { method: 'DELETE' });
+  }catch(e){
+    // Removed locally above even if the network call failed.
   }
 }
 
@@ -908,7 +922,7 @@ async function submitBooking(){
   const withEngineer = document.getElementById('custEngineer').checked;
   const rate = RATE_PER_HOUR + (withEngineer ? ENGINEER_RATE_PER_HOUR : 0);
   const total = hoursCount * rate;
-  bookings.push({
+  const newBooking = {
     id: uid(),
     date: dateStr,
     startHour: hoursArr[0],
@@ -919,8 +933,9 @@ async function submitBooking(){
     source: 'online',
     status: 'pending',
     createdAt: Date.now()
-  });
-  await saveBookings();
+  };
+  bookings.push(newBooking);
+  await putBookingRemote(newBooking);
   selectedHours.clear();
   wasValidSelection = false;
   document.getElementById('custName').value = '';
@@ -1015,7 +1030,7 @@ function renderCustomerResults(){
 async function cancelMyBooking(id){
   await loadBookings();
   bookings = bookings.filter(x => x.id !== id);
-  await saveBookings();
+  await deleteBookingRemote(id);
   renderCustomerResults();
 }
 
@@ -1071,11 +1086,12 @@ async function adminAddBooking(){
     msgBox.innerHTML = '<div class="msg err">That clashes with an existing booking on this date.</div>';
     return;
   }
-  bookings.push({
+  const newBooking = {
     id: uid(), date, startHour, endHour, name, contact, notes,
     source: 'admin', status: 'confirmed', createdAt: Date.now()
-  });
-  await saveBookings();
+  };
+  bookings.push(newBooking);
+  await putBookingRemote(newBooking);
   document.getElementById('admName').value = '';
   document.getElementById('admContact').value = '';
   document.getElementById('admNotes').value = '';
@@ -1086,14 +1102,16 @@ async function adminAddBooking(){
 async function confirmBooking(id){
   await loadBookings();
   const b = bookings.find(x => x.id === id);
-  if(b) b.status = 'confirmed';
-  await saveBookings();
+  if(b){
+    b.status = 'confirmed';
+    await putBookingRemote(b);
+  }
   renderBookingList();
 }
 async function deleteBooking(id){
   await loadBookings();
   bookings = bookings.filter(x => x.id !== id);
-  await saveBookings();
+  await deleteBookingRemote(id);
   renderBookingList();
 }
 
