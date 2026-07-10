@@ -668,11 +668,23 @@ async function loadBookings(){
     const res = await window.storage.get(STORAGE_KEY, true);
     bookings = res && res.value ? JSON.parse(res.value) : [];
   }catch(e){
-    bookings = [];
+    // TEMP FALLBACK: window.storage isn't available on GitHub Pages, so bookings
+    // only persist on this browser/device for now — not a shared live board yet.
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      bookings = raw ? JSON.parse(raw) : [];
+    }catch(e2){
+      bookings = [];
+    }
   }
 }
 async function saveBookings(){
-  await window.storage.set(STORAGE_KEY, JSON.stringify(bookings), true);
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(bookings), true);
+  }catch(e){
+    // TEMP FALLBACK: see loadBookings() above.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+  }
 }
 
 /* ---------- public booking grid ---------- */
