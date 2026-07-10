@@ -618,8 +618,8 @@
    not real security. Swap for a real backend before this matters.
    ========================================================= */
   const ADMIN_USERS = [
-    { name: "Tim", pin: "858345" },
-    { name: "Asher", pin: "142920" }
+    { name: "Tim", pinHash: "7183fb56ea715d6d0045f2d52d2262d1984cfb0c5af23697c690178911be0b17" },
+    { name: "Asher", pinHash: "34e608dc1e91ba3bcde853ed713358a6dc76e752b5c1279461a350755afe2556" }
   ];
 /* ========================================================= */
 
@@ -961,15 +961,49 @@ function closeLogin(){ document.getElementById('loginOverlay').classList.remove(
 
 let currentAdmin = null;
 
-function tryLogin(){
+const LOGIN_LOCKOUT_KEY = 'pms-login-lockout';
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+function getLoginLockoutState(){
+  try{
+    return JSON.parse(localStorage.getItem(LOGIN_LOCKOUT_KEY)) || { attempts: 0, lockedUntil: 0 };
+  }catch(e){
+    return { attempts: 0, lockedUntil: 0 };
+  }
+}
+function setLoginLockoutState(state){
+  localStorage.setItem(LOGIN_LOCKOUT_KEY, JSON.stringify(state));
+}
+async function sha256Hex(text){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function tryLogin(){
+  const state = getLoginLockoutState();
+  if(state.lockedUntil > Date.now()){
+    const mins = Math.ceil((state.lockedUntil - Date.now()) / 60000);
+    document.getElementById('loginMsg').innerHTML = '<div class="msg err">Too many wrong attempts — try again in ' + mins + ' min.</div>';
+    return;
+  }
   const pin = document.getElementById('pinInput').value.trim();
-  const match = ADMIN_USERS.find(u => u.pin === pin);
+  const hash = await sha256Hex(pin);
+  const match = ADMIN_USERS.find(u => u.pinHash === hash);
   if(match){
+    setLoginLockoutState({ attempts: 0, lockedUntil: 0 });
     currentAdmin = match.name;
     closeLogin();
     enterAdmin();
   }else{
-    document.getElementById('loginMsg').innerHTML = '<div class="msg err">Wrong PIN.</div>';
+    const attempts = state.attempts + 1;
+    if(attempts >= LOGIN_MAX_ATTEMPTS){
+      setLoginLockoutState({ attempts: 0, lockedUntil: Date.now() + LOGIN_LOCKOUT_MS });
+      document.getElementById('loginMsg').innerHTML = '<div class="msg err">Too many wrong attempts — try again in 5 min.</div>';
+    }else{
+      setLoginLockoutState({ attempts, lockedUntil: 0 });
+      document.getElementById('loginMsg').innerHTML = '<div class="msg err">Wrong PIN.</div>';
+    }
   }
 }
 
