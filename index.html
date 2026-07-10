@@ -663,13 +663,17 @@ function todayISO(){ const d = new Date(); return d.toISOString().slice(0,10); }
 function fmtHour(h){ return (h<10?'0':'') + h + ':00'; }
 
 /* ---------- storage ---------- */
+// Shared live storage: Firebase Realtime Database (public read/write rules —
+// same "not real security" caveat as the admin PINs above).
+const FIREBASE_DB_URL = "https://poplarstudios-316a1-default-rtdb.europe-west1.firebasedatabase.app";
+
 async function loadBookings(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, true);
-    bookings = res && res.value ? JSON.parse(res.value) : [];
+    const res = await fetch(FIREBASE_DB_URL + '/' + STORAGE_KEY + '.json');
+    const data = await res.json();
+    bookings = data || [];
   }catch(e){
-    // TEMP FALLBACK: window.storage isn't available on GitHub Pages, so bookings
-    // only persist on this browser/device for now — not a shared live board yet.
+    // Network hiccup fallback — this device's last-known copy, not the shared board.
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
       bookings = raw ? JSON.parse(raw) : [];
@@ -679,11 +683,15 @@ async function loadBookings(){
   }
 }
 async function saveBookings(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
   try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify(bookings), true);
+    await fetch(FIREBASE_DB_URL + '/' + STORAGE_KEY + '.json', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(bookings)
+    });
   }catch(e){
-    // TEMP FALLBACK: see loadBookings() above.
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+    // Saved locally above even if the network call failed — not silently lost.
   }
 }
 
