@@ -339,7 +339,7 @@
     <div>
       <div class="eyebrow">POPLAR, E14 &nbsp;·&nbsp; HOURLY STUDIO TIME</div>
       <h1>BE THE <span>LOUDEST</span><br>IN THE ROOM.</h1>
-      <p class="sub">Hourly studio bookings in Poplar. Smoke-friendly, ventilated, and run by people who record here too.</p>
+      <p class="sub">Hourly studio bookings in Poplar, run by people who record here too.</p>
     </div>
     <div class="booker hero-booker">
       <div class="hero-booker-top">
@@ -352,7 +352,7 @@
         <div style="margin-top:6px;"><span class="chip" style="background:var(--gold);"></span>Your selection</div>
         <div style="margin-top:6px;"><span class="chip" style="background:var(--stamp-red);"></span>Booked</div>
       </div>
-      <label class="field-label" style="margin-top:18px;">Available hours <span style="color:var(--gold);text-transform:none;letter-spacing:0;">— open 10:00–23:00 daily</span></label>
+      <label class="field-label" style="margin-top:18px;">Available hours <span style="color:var(--gold);text-transform:none;letter-spacing:0;">— open 24 hours daily</span></label>
       <div class="slot-grid" id="slotGrid"></div>
       <div class="min-note" style="color:var(--gold);font-weight:600;">Minimum booking: 2 hours before 12:00, 5 hours from 12:00 onward. Selecting a start time auto-fills the minimum — add more hours if you need them.</div>
       <button class="btn btn-primary" id="continueBtn" onclick="openBookingDrawer()" disabled>Continue to details →</button>
@@ -368,9 +368,9 @@
       <p>Pick your date, pick your hours — 2hr minimum before noon, 5hr minimum after. No full-day rates, no wasted time.</p>
     </div>
     <div class="plate">
-      <div class="tag">02 — HOUSE RULES</div>
-      <h3>Smoke-friendly</h3>
-      <p>Ventilated live room. Light up on your terms — we built this space for how sessions actually go.</p>
+      <div class="tag">02 — LIVE ROOM</div>
+      <h3>Ready to record</h3>
+      <p>The rig stays set up between sessions — plug in and go, no resetting the room first.</p>
     </div>
     <div class="plate">
       <div class="tag">03 — LOCATION</div>
@@ -427,8 +427,8 @@
     <ul class="spec-list">
       <li><span>Room</span><span>Live room + iso booth</span></li>
       <li><span>Booking</span><span>Hourly — 2hr min before 12:00, 5hr min after</span></li>
-      <li><span>House rules</span><span>Smoke-friendly, ventilated</span></li>
-      <li><span>Hours</span><span>10:00 – 23:00 daily</span></li>
+      <li><span>House rules</span><span>Ventilated live room, respect the gear</span></li>
+      <li><span>Hours</span><span>Open 24 hours daily</span></li>
       <li><span>Location</span><span>Poplar, E14</span></li>
     </ul>
   </div>
@@ -445,7 +445,7 @@
       <li><span>Payment</span><span>Sessions are paid in advance via our secure payment provider (Stripe)</span></li>
       <li><span>Cancellations</span><span>Under 24 hours' notice, or no-shows, may be charged in full</span></li>
       <li><span>Card on file</span><span>Your card is held securely by Stripe; damage to equipment or property may be charged to it</span></li>
-      <li><span>House rules</span><span>Smoke-friendly, ventilated — respect the gear and the room</span></li>
+      <li><span>House rules</span><span>Ventilated — respect the gear and the room</span></li>
     </ul>
     <p class="legal-note">This is placeholder wording, not legal advice — have a solicitor review the full terms before publishing.</p>
   </div>
@@ -645,8 +645,8 @@
   const STRIPE_PAYMENT_LINK_ENGINEER = "https://buy.stripe.com/test_3cI8wIgRf2IT11O5pH5gc01";
 /* ========================================================= */
 
-const OPEN_HOUR = 10;   // studio opens 10:00
-const CLOSE_HOUR = 23;  // last bookable hour starts at 22:00 (22-23)
+const OPEN_HOUR = 0;    // studio open from 00:00
+const CLOSE_HOUR = 24;  // ...through 23:00–24:00 — 24 bookable hours a day
 const LATE_START_HOUR = 12; // bookings starting at/after this hour need the longer minimum
 const MIN_HOURS_EARLY = 2;  // minimum booking length for starts before LATE_START_HOUR
 const MIN_HOURS_LATE = 5;   // minimum booking length for starts at/after LATE_START_HOUR
