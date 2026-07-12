@@ -552,7 +552,7 @@
       </div>
     </div>
     <div class="cta-row" style="margin-top:18px;">
-      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitBooking()">Request booking</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitBooking()">Pay &amp; book now</button>
     </div>
     <div id="bookMsg"></div>
   </div>
@@ -624,24 +624,11 @@
 /* ========================================================= */
 
 /* =========================================================
-   ⚠ PAYMENT — paste your real Stripe Payment Link below.
-
-   Set this up in the Stripe Dashboard (no code needed):
-   1. Payment links -> Create payment link
-   2. Product: "Studio session", price £13.00, billed per unit,
-      quantity adjustable (so customers can set it to match their hours)
-   3. Advanced options -> turn on "Save payment details for future use"
-      (this is what lets you charge the same card later for damages)
-   4. Advanced options -> require Terms of Service acceptance, pointing
-      at this site's #terms section
-   5. Copy the generated link below.
-
-   This site never collects or stores card details directly — that
-   handoff to Stripe is intentional, see the message in chat for why.
+   ⚠ BACKEND — Cloudflare Worker that creates Stripe Checkout Sessions,
+   handles the Stripe webhook (confirm booking + WhatsApp the team), and
+   admin decline+refund. Paste the deployed Worker URL below.
    ========================================================= */
-  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_aFa4gsasRcjtfWI8BT5gc00";
-  // £25/hr price (£13 room + £12 resident engineer), used when the engineer add-on is checked
-  const STRIPE_PAYMENT_LINK_ENGINEER = "https://buy.stripe.com/test_3cI8wIgRf2IT11O5pH5gc01";
+  const WORKER_URL = "https://poplar-studios-backend.poplar-studios.workers.dev";
 /* ========================================================= */
 
 const OPEN_HOUR = 0;    // studio open from 00:00
@@ -712,10 +699,15 @@ async function deleteBookingRemote(id){
 function bookingsForDate(dateStr){
   return bookings.filter(b => b.date === dateStr);
 }
+const AWAITING_PAYMENT_TIMEOUT_MS = 30 * 60 * 1000; // 30 min — release abandoned checkouts
+
 function hourStatus(dateStr, hour){
   const dayBookings = bookingsForDate(dateStr);
   for(const b of dayBookings){
     if(hour >= b.startHour && hour < b.endHour){
+      if(b.status === 'awaiting_payment' && Date.now() - b.createdAt > AWAITING_PAYMENT_TIMEOUT_MS){
+        continue; // abandoned checkout — treat this slot as open again
+      }
       return b.status === 'confirmed' ? 'booked' : 'pending';
     }
   }
@@ -916,43 +908,34 @@ async function submitBooking(){
     }
   }
 
-  const contact = phone ? (email + ' · ' + phone) : email;
-  const hoursCount = hoursArr.length;
   const withEngineer = document.getElementById('custEngineer').checked;
-  const rate = RATE_PER_HOUR + (withEngineer ? ENGINEER_RATE_PER_HOUR : 0);
-  const total = hoursCount * rate;
-  const newBooking = {
-    id: uid(),
-    date: dateStr,
-    startHour: hoursArr[0],
-    endHour: hoursArr[hoursArr.length-1] + 1,
-    name, email: email.toLowerCase(), phone, contact, notes,
-    price: total,
-    withEngineer,
-    source: 'online',
-    status: 'pending',
-    createdAt: Date.now()
-  };
-  bookings.push(newBooking);
-  await putBookingRemote(newBooking);
-  selectedHours.clear();
-  wasValidSelection = false;
-  document.getElementById('custName').value = '';
-  document.getElementById('custEmail').value = '';
-  document.getElementById('custPhone').value = '';
-  document.getElementById('custNotes').value = '';
-  document.getElementById('custAgree').checked = false;
-  document.getElementById('custEngineer').checked = false;
-  renderSlotGrid();
-  updateSelectionSummary();
-  updateContinueButtonState();
-  const payLink = withEngineer ? STRIPE_PAYMENT_LINK_ENGINEER : STRIPE_PAYMENT_LINK;
-  msgBox.innerHTML =
-    '<div class="msg ok">Booking requested for ' + dateStr + ', ' + fmtHour(hoursArr[0]) + '–' + fmtHour(hoursArr[hoursArr.length-1]+1) +
-    ' · £' + total + ' total' + (withEngineer ? ' (incl. resident engineer)' : '') + '. We\'ll confirm shortly.</div>' +
-    '<a href="' + payLink + '" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px;">Secure booking — pay &amp; save card →</a>' +
-    '<div class="min-note" style="margin-top:10px;">Opens Stripe\'s secure payment page in a new tab. Set the quantity to <strong>' + hoursCount + '</strong> to match £' + total + '.</div>' +
-    '<div class="min-note" style="margin-top:14px;"><strong>Bring your own:</strong> laptop, mouse + keyboard, USB-C / USB-A cables, 1/4" headphone adaptor. Everything else — audio interface, MIDI keyboard, mic, headphones &amp; monitors — is in the room.</div>';
+  const submitBtn = document.querySelector('#bookingOverlay .btn-primary');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Redirecting to payment…';
+  msgBox.innerHTML = '';
+
+  try{
+    const res = await fetch(WORKER_URL + '/create-checkout-session', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        date: dateStr,
+        startHour: hoursArr[0],
+        endHour: hoursArr[hoursArr.length-1] + 1,
+        name, email, phone, notes,
+        withEngineer
+      })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.url){
+      throw new Error(data.error || 'Could not start checkout');
+    }
+    window.location.href = data.url; // off to Stripe — booking is already held as "awaiting_payment"
+  }catch(e){
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Pay & book now';
+    msgBox.innerHTML = '<div class="msg err">Could not start checkout — please try again in a moment.</div>';
+  }
 }
 
 /* ---------- admin ---------- */
@@ -1148,6 +1131,27 @@ async function deleteBooking(id){
   renderBookingList();
 }
 
+async function declineAndRefund(id){
+  const pin = prompt('Enter your PIN to confirm decline + refund:');
+  if(!pin) return;
+  try{
+    const res = await fetch(WORKER_URL + '/decline', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ bookingId: id, pin })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      alert(data.error || 'Could not decline booking.');
+      return;
+    }
+    alert(data.refunded ? 'Declined and refunded.' : 'Declined (no payment to refund).');
+    renderBookingList();
+  }catch(e){
+    alert('Network error — try again.');
+  }
+}
+
 async function renderBookingList(){
   await loadBookings();
   const list = document.getElementById('bookingList');
@@ -1170,6 +1174,7 @@ async function renderBookingList(){
         <span class="badge ${b.status}">${b.status}</span>
         <div class="row-actions">
           ${b.status === 'pending' ? `<button class="confirm" onclick="confirmBooking('${b.id}')">Confirm</button>` : ''}
+          ${b.paymentIntentId ? `<button class="del" onclick="declineAndRefund('${b.id}')">Decline &amp; refund</button>` : ''}
           <button class="del" onclick="deleteBooking('${b.id}')">Delete</button>
         </div>
       </div>
@@ -1191,7 +1196,29 @@ function startPolling(){ pollTimer = setInterval(renderBookingList, 15000); }
 function stopPolling(){ if(pollTimer) clearInterval(pollTimer); }
 
 /* ---------- init ---------- */
+function showPostPaymentBanner(){
+  const params = new URLSearchParams(window.location.search);
+  if(!params.has('paid') && !params.has('cancelled')) return;
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:sticky;top:0;z-index:50;padding:16px 24px;text-align:center;font-family:Work Sans,sans-serif;font-size:15px;';
+  if(params.has('paid')){
+    bar.style.background = 'var(--gold)';
+    bar.style.color = '#231a08';
+    bar.innerHTML = '<strong>Booking confirmed — payment received.</strong> The team\'s been notified. ' +
+      'Bring your own: laptop, mouse + keyboard, USB-C / USB-A cables, 1/4" headphone adaptor. ' +
+      'Everything else is in the room.';
+  }else{
+    bar.style.background = '#3a3527';
+    bar.style.color = 'var(--paper)';
+    bar.innerHTML = 'Checkout was cancelled — no payment taken, your slot wasn\'t booked.';
+  }
+  document.body.prepend(bar);
+  // Clean the query string so a refresh doesn't re-show the banner.
+  window.history.replaceState({}, '', window.location.pathname);
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
+  showPostPaymentBanner();
   initCalendarState();
   renderCalendar();
   await loadBookings();
